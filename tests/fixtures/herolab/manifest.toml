@@ -1,0 +1,8 @@
+id = "herolab_seed_001"
+purpose = "seed fixture placeholder for parser+reconcile tests"
+origin = "synthetic"
+license = "internal test fixture"
+redacted = false
+hash_sha256 = "TBD"
+expected_outcome = "created"
+notes = "Replace with concrete input/expected files when first parser slice lands."
