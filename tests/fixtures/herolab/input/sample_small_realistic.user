@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document signature="Hero Lab Data">
+  <thing id="raHuman" name="Human" compset="Race">
+    <usesource id="srcCRB" name="Pathfinder Core Rulebook" parent="Paizo Inc." />
+    <fieldval field="Summary" value="Baseline human ancestry." />
+  </thing>
+  <thing id="cWizard" name="Wizard" compset="Class">
+    <usesource id="srcCRB" name="Pathfinder Core Rulebook" parent="Paizo Inc." />
+    <eval phase="Initialize" priority="1000"><![CDATA[
+      doneif (field[abValue].value = 0)
+    ]]></eval>
+  </thing>
+</document>

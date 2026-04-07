@@ -5,4 +5,9 @@ edition = "2024"
 
 [dependencies]
 artisan-core = { path = "../artisan-core" }
+indexmap = { workspace = true }
+roxmltree = "0.20"
+serde_json = { workspace = true }
 thiserror = { workspace = true }
+uuid = { workspace = true, features = ["v5"] }
+zip = "2"
