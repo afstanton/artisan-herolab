@@ -9,7 +9,8 @@ fn build_test_archive() -> Vec<u8> {
         let mut zip = zip::ZipWriter::new(&mut cursor);
         let options = SimpleFileOptions::default();
 
-        zip.start_file("index.xml", options).expect("start index.xml");
+        zip.start_file("index.xml", options)
+            .expect("start index.xml");
         zip.write_all(
             br#"<document signature='Portfolio Index'><thing id='tRaceHuman' name='Human'><usesource id='srcCore' name='Pathfinder Core Rulebook' parent='Paizo Inc.'/></thing></document>"#,
         )
@@ -40,14 +41,18 @@ fn inspect_portfolio_archive_extracts_assets_and_catalog() {
     let manifest = HerolabLoader::inspect_portfolio_archive(&bytes).expect("inspect archive");
 
     assert_eq!(manifest.assets.len(), 4);
-    assert!(manifest
-        .assets
-        .iter()
-        .any(|a| a.path == "images/portrait.png" && a.kind == AssetKind::Image));
-    assert!(manifest
-        .assets
-        .iter()
-        .any(|a| a.path == "index.xml" && a.kind == AssetKind::Xml));
+    assert!(
+        manifest
+            .assets
+            .iter()
+            .any(|a| a.path == "images/portrait.png" && a.kind == AssetKind::Image)
+    );
+    assert!(
+        manifest
+            .assets
+            .iter()
+            .any(|a| a.path == "index.xml" && a.kind == AssetKind::Xml)
+    );
 
     assert_eq!(manifest.catalog.publishers.len(), 1);
     assert_eq!(manifest.catalog.sources.len(), 1);

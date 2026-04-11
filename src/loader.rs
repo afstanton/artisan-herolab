@@ -4,8 +4,7 @@ use artisan_core::{
     CanonicalId, CharacterGraph, Entity, EntityType,
     domain::{
         CitationRecord, PublisherRecord, SourceRecord, SubjectRef, VerificationState,
-        citation::CitationLocator,
-        entity::CompletenessState,
+        citation::CitationLocator, entity::CompletenessState,
     },
     id::{ExternalId, FormatId},
 };
@@ -59,7 +58,10 @@ impl HerolabLoader {
         Ok(Self::parse_user_catalog(_input, "inline.user")?.entities)
     }
 
-    pub fn parse_user_catalog(input: &str, source_name: &str) -> Result<ParsedCatalog, HerolabError> {
+    pub fn parse_user_catalog(
+        input: &str,
+        source_name: &str,
+    ) -> Result<ParsedCatalog, HerolabError> {
         let doc = roxmltree::Document::parse(input)
             .map_err(|e| HerolabError::Parse(format!("invalid XML: {e}")))?;
 
@@ -76,6 +78,8 @@ impl HerolabLoader {
             key: "herolab.user.thing".to_string(),
             name: "HeroLab Thing".to_string(),
             parent: None,
+            fields: Vec::new(),
+            relationships: Vec::new(),
             descriptive_fields: IndexMap::new(),
             mechanical_fields: IndexMap::new(),
             external_ids: vec![ExternalId {
@@ -132,7 +136,8 @@ impl HerolabLoader {
         let mut publishers = Vec::new();
         let mut publisher_ids = Vec::new();
         if let Some(name) = publisher_name.filter(|n| !n.trim().is_empty()) {
-            let publisher_id = deterministic_id(PUBLISHER_NAMESPACE, &format!("herolab:publisher:{name}"));
+            let publisher_id =
+                deterministic_id(PUBLISHER_NAMESPACE, &format!("herolab:publisher:{name}"));
             publishers.push(PublisherRecord {
                 id: publisher_id,
                 name: name.clone(),
@@ -174,10 +179,16 @@ impl HerolabLoader {
 
             let mut attributes = IndexMap::new();
             if let Some(id) = thing.attribute("id") {
-                attributes.insert("thing_id".to_string(), serde_json::Value::String(id.to_string()));
+                attributes.insert(
+                    "thing_id".to_string(),
+                    serde_json::Value::String(id.to_string()),
+                );
             }
             if let Some(compset) = thing.attribute("compset") {
-                attributes.insert("thing_compset".to_string(), serde_json::Value::String(compset.to_string()));
+                attributes.insert(
+                    "thing_compset".to_string(),
+                    serde_json::Value::String(compset.to_string()),
+                );
             }
 
             let citation_id = deterministic_id(CITATION_NAMESPACE, &format!("{stable_key}:source"));
@@ -238,7 +249,9 @@ impl HerolabLoader {
         })
     }
 
-    pub fn inspect_portfolio_archive(input: &[u8]) -> Result<PortfolioArchiveManifest, HerolabError> {
+    pub fn inspect_portfolio_archive(
+        input: &[u8],
+    ) -> Result<PortfolioArchiveManifest, HerolabError> {
         let cursor = Cursor::new(input);
         let mut archive = ZipArchive::new(cursor)
             .map_err(|e| HerolabError::Parse(format!("invalid ZIP archive: {e}")))?;

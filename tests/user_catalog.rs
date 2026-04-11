@@ -10,7 +10,8 @@ fn parse_user_catalog_extracts_privileged_records() {
 </document>
 "#;
 
-    let parsed = HerolabLoader::parse_user_catalog(input, "sample.user").expect("parse user catalog");
+    let parsed =
+        HerolabLoader::parse_user_catalog(input, "sample.user").expect("parse user catalog");
 
     assert_eq!(parsed.publishers.len(), 1);
     assert_eq!(parsed.publishers[0].name, "Paizo Inc.");
@@ -36,7 +37,8 @@ fn parse_user_catalog_falls_back_to_filename_source() {
 </document>
 "#;
 
-    let parsed = HerolabLoader::parse_user_catalog(input, "fallback.user").expect("parse user catalog");
+    let parsed =
+        HerolabLoader::parse_user_catalog(input, "fallback.user").expect("parse user catalog");
 
     assert_eq!(parsed.publishers.len(), 0);
     assert_eq!(parsed.sources.len(), 1);
