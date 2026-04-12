@@ -4,7 +4,8 @@ use artisan_core::{
     CanonicalId, CharacterGraph, Entity, EntityType,
     domain::{
         CitationRecord, PublisherRecord, SourceRecord, SubjectRef, VerificationState,
-        citation::CitationLocator, entity::CompletenessState,
+        citation::CitationLocator, entity::CompletenessState, rules::Prerequisite, rules::RuleHook,
+        script::ScriptProgram, script::ScriptStatement,
     },
     id::{ExternalId, FormatId},
 };
@@ -190,6 +191,92 @@ impl HerolabLoader {
                     serde_json::Value::String(compset.to_string()),
                 );
             }
+            for fieldval in thing
+                .children()
+                .filter(|n| n.is_element() && n.tag_name().name() == "fieldval")
+            {
+                if let (Some(field), Some(value)) =
+                    (fieldval.attribute("field"), fieldval.attribute("value"))
+                {
+                    attributes.insert(
+                        format!("field:{field}"),
+                        serde_json::Value::String(value.to_string()),
+                    );
+                }
+            }
+            for arrayval in thing
+                .children()
+                .filter(|n| n.is_element() && n.tag_name().name() == "arrayval")
+            {
+                let Some(field) = arrayval.attribute("field") else {
+                    continue;
+                };
+
+                let mut values = Vec::new();
+                if let Some(value) = arrayval.attribute("value") {
+                    values.push(serde_json::Value::String(value.to_string()));
+                }
+
+                for value_node in arrayval.children().filter(|n| n.is_element()) {
+                    if let Some(value) = value_node.attribute("value") {
+                        values.push(serde_json::Value::String(value.to_string()));
+                    } else if let Some(text) =
+                        value_node.text().map(str::trim).filter(|t| !t.is_empty())
+                    {
+                        values.push(serde_json::Value::String(text.to_string()));
+                    }
+                }
+
+                if !values.is_empty() {
+                    attributes.insert(format!("array:{field}"), serde_json::Value::Array(values));
+                }
+            }
+
+            let mut rule_hooks = Vec::new();
+            for tag in ["eval", "evalrule", "procedure", "bootstrap"] {
+                for script_node in thing
+                    .children()
+                    .filter(|n| n.is_element() && n.tag_name().name() == tag)
+                {
+                    if let Some(script) = build_script_program(&script_node) {
+                        rule_hooks.push(RuleHook {
+                            phase: script_node.attribute("phase").map(ToString::to_string),
+                            priority: script_node
+                                .attribute("priority")
+                                .and_then(|value| value.parse::<i32>().ok()),
+                            index: script_node
+                                .attribute("index")
+                                .and_then(|value| value.parse::<i32>().ok()),
+                            script: Some(script),
+                        });
+                    }
+                }
+            }
+
+            let mut prerequisites = Vec::new();
+            for exprreq in thing
+                .children()
+                .filter(|n| n.is_element() && n.tag_name().name() == "exprreq")
+            {
+                prerequisites.push(Prerequisite {
+                    kind: "exprreq".to_string(),
+                    expression: script_text(&exprreq),
+                });
+            }
+            for prereq in thing
+                .children()
+                .filter(|n| n.is_element() && n.tag_name().name() == "prereq")
+            {
+                for validate in prereq
+                    .children()
+                    .filter(|n| n.is_element() && n.tag_name().name() == "validate")
+                {
+                    prerequisites.push(Prerequisite {
+                        kind: "validate".to_string(),
+                        expression: script_text(&validate),
+                    });
+                }
+            }
 
             let citation_id = deterministic_id(CITATION_NAMESPACE, &format!("{stable_key}:source"));
             citations.push(CitationRecord {
@@ -215,8 +302,8 @@ impl HerolabLoader {
                 name,
                 attributes,
                 effects: Vec::new(),
-                prerequisites: Vec::new(),
-                rule_hooks: Vec::new(),
+                prerequisites,
+                rule_hooks,
                 citations: vec![citation_id],
                 external_ids: vec![ExternalId {
                     format: FormatId::Herolab,
@@ -356,4 +443,19 @@ fn dedupe_catalog(catalog: &mut ParsedCatalog) {
 
 fn deterministic_id(namespace: Uuid, key: &str) -> CanonicalId {
     CanonicalId(Uuid::new_v5(&namespace, key.as_bytes()))
+}
+
+fn build_script_program(node: &roxmltree::Node<'_, '_>) -> Option<ScriptProgram> {
+    let source = script_text(node)?;
+    Some(ScriptProgram {
+        source: Some(source.clone()),
+        statements: vec![ScriptStatement::Opaque(source)],
+    })
+}
+
+fn script_text(node: &roxmltree::Node<'_, '_>) -> Option<String> {
+    node.text()
+        .map(str::trim)
+        .filter(|text| !text.is_empty())
+        .map(ToString::to_string)
 }
