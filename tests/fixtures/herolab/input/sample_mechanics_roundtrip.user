@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document signature="Hero Lab Data">
+  <thing id="spTashaMindWhip" name="Tasha's Mind Whip" compset="Spell" summary="Psychic lash.">
+    <usesource id="5eTCE" name="Tasha's Cauldron of Everything" parent="Wizards of the Coast" />
+    <fieldval field="sRange" value="90 feet" />
+    <fieldval field="sDuration" value="1 round" />
+    <fieldval field="sTarget" value="One creature you can see" />
+    <fieldval field="sSave" value="Intelligence negates" />
+    <tag group="sClass" tag="cHelpWiz"/>
+    <tag group="sClass" tag="cHelpSorc"/>
+    <tag group="sLevel" tag="2"/>
+    <tag group="sSchool" tag="Enchantment"/>
+    <tag group="sCastTime" tag="Action1"/>
+    <tag group="sComp" tag="V"/>
+    <tag group="sComp" tag="S"/>
+  </thing>
+  <thing id="abStormRune" name="Storm Rune" compset="Ability" description="Reaction control over fate.">
+    <tag group="FeatureTyp" tag="Reaction"/>
+    <tag group="Usage" tag="LongRest"/>
+    <autotag group="ChargeUse" tag="1"/>
+    <autotag group="Recharge" tag="6"/>
+    <exprreq><![CDATA[hero.tagis[Helper.Ready]]]></exprreq>
+  </thing>
+  <thing id="itMoonSickle" name="Moon Sickle" compset="Gear" uniqueness="useronce">
+    <tag group="GearType" tag="gtWondrous"/>
+    <tag group="ItemRarity" tag="Rare"/>
+    <tag group="Helper" tag="NeedAttune"/>
+    <tag group="Usage" tag="Day"/>
+    <autotag group="ChargeUse" tag="1"/>
+    <assignval field="trkMax" value="3" behavior="replace"/>
+  </thing>
+  <thing id="rFairy" name="Fairy" compset="Race">
+    <fieldval field="rSpeed" value="30"/>
+    <fieldval field="rHitDice" value="1"/>
+    <tag group="RaceType" tag="Normal"/>
+    <tag group="RaceSize" tag="Small11" name="Small" abbrev="Small"/>
+    <tag group="Alignment" tag="Unaligned"/>
+    <tag group="ProfSkill" tag="skPercep"/>
+  </thing>
+  <thing id="cRogue" name="Rogue" compset="Class">
+    <fieldval field="rHitDice" value="8"/>
+    <tag group="ClassSkill" tag="skStealth"/>
+    <tag group="ClassSkill" tag="skAcrobat"/>
+    <eval phase="Initialize" priority="1000"><![CDATA[
+      doneif (field[abValue].value = 0)
+    ]]></eval>
+  </thing>
+</document>
