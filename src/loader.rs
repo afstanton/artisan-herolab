@@ -196,11 +196,10 @@ impl HerolabLoader {
                     id: entity_type_id,
                     key: descriptor.key.clone(),
                     name: descriptor.name.clone(),
+                    game_system: None,
                     parent: None,
                     fields: descriptor.fields.clone(),
                     relationships: Vec::new(),
-                    descriptive_fields: IndexMap::new(),
-                    mechanical_fields: IndexMap::new(),
                     external_ids: vec![ExternalId {
                         format: FormatId::Herolab,
                         namespace: Some("entity_type".to_string()),
